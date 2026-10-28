@@ -101,64 +101,21 @@ Lestu það í bútum:
 
 ## Íslenskir stafir og `\w` {#islenskir-stafir}
 
-Taflan efst á síðunni segir að `\w` passi við bókstafi. Það á við í Python, en **ekki í R með
-`perl = TRUE`**. Þar passar `\w` sjálfgefið aðeins við enska stafrófið (`a`–`z` og `A`–`Z`),
-tölustafi og `_`. Stafir eins og `á`, `ð`, `þ` og `ö` falla utan við, og það gerist án villu
-og án viðvörunar.
+R hefur tvær regex-vélar. Sjálfgefna vélin fylgir POSIX-staðli og skilur til dæmis hvorki
+`[\d]` né `(?=...)`. Með `perl = TRUE` notar R PCRE-vélina í staðinn. Hún ræður við meira og
+er yfirleitt hraðari, og þess vegna nota R-dæmin hér `perl = TRUE`.
 
-::: {.panel-tabset}
-## R
+Gallinn er að þá passar `\w` aðeins við enska stafi. Settu `(*UCP)` fremst í mynstrið til að fá
+íslenska stafi með:
 
 ```{r}
 #| label: syntax-r-is-1
 setning <- "Hún sá Þór við ána"
 regmatches(setning, gregexpr("\\w+", setning, perl = TRUE))
-```
-
-## Python
-
-```{python}
-#| label: syntax-py-is-1
-import re
-
-setning = "Hún sá Þór við ána"
-print(re.findall(r"\w+", setning))
-
-# Til samanburðar: re.ASCII lætur Python hegða sér eins og R
-print(re.findall(r"\w+", setning, flags=re.ASCII))
-```
-:::
-
-R klippir orðin í sundur við hvern íslenskan staf: `Hún` verður `H` og `n`, og ekkert er eftir
-af `Þór` nema `r`. Sama gildir um `\b` og um POSIX-klasa eins og `[[:alpha:]]` þegar
-`perl = TRUE` er notað. PCRE-vélin sem R notar beitir sjálfgefið ASCII-reglum á þessa flokka,
-en `re` í Python 3 beitir Unicode-reglum.
-
-Þrjár leiðir duga í R:
-
-| Leið | Mynstur | Hvað það gerir |
-|---|---|---|
-| `(*UCP)` fremst | `(*UCP)\w+` | kveikir á Unicode-reglum fyrir `\w`, `\d`, `\s`, `\b` og POSIX-klasa |
-| `\p{L}` | `\p{L}+` | hvaða bókstafur sem er, í hvaða stafrófi sem er, en hvorki tölur né `_` |
-| upptalning | `[A-Za-zÁÉÍÓÚÝÞÆÖÐáéíóúýþæöð]+` | gagnsætt, en auðvelt að gleyma `ð` og `Ð` |
-
-```{r}
-#| label: syntax-r-is-2
 regmatches(setning, gregexpr("(*UCP)\\w+", setning, perl = TRUE))
-regmatches(setning, gregexpr("\\p{L}+", setning, perl = TRUE))
-regmatches(setning, gregexpr("[A-Za-zÁÉÍÓÚÝÞÆÖÐáéíóúýþæöð]+", setning, perl = TRUE))
 ```
 
-Föllin í **stringr** (`str_detect()`, `str_extract_all()` o.fl.) nota ICU-vélina, sem fylgir
-Unicode-reglum. Þar passar `\w` við íslenska stafi án aukastillinga.
-
-::: {.callout-important}
-## Prófaðu alltaf á íslenskum dæmum
-
-Mynstur sem virkar á `Jon` og `Thor` segir ekkert um `Jón` og `Þór`. Settu að minnsta kosti
-eitt dæmi með `á`, `ð`, `þ` eða `ö` í prófin þín, sérstaklega ef þú afritar mynstur úr Python,
-af vefnum eða frá erindreka.
-:::
+Í Python passar `\w` við íslenska stafi án nokkurra stillinga.
 
 ## Æfingar
 
@@ -372,28 +329,26 @@ for s in daemi:
 
 ### 6. Íslensk orð
 
-Mynstrið á að passa við orð sem eru eingöngu úr bókstöfum, íslenskum líka: `Jón`, `Þórdís` og
-`Hafnarfjörður`, en ekki við `R2D2` eða `e-mail`. Það á að virka í R með `perl = TRUE`.
+Mynstrið á að passa við `Jón`, `Þórdís` og `Hafnarfjörður`, en ekki við `e-mail` eða
+`Jón Jónsson`. Það á að virka í R með `perl = TRUE`.
 
 ::: {.callout-tip collapse="true" title="Lausn"}
 ``` text
-^\p{L}+$
+(*UCP)^\w+$
 ```
 
-`\p{L}` er hvaða bókstafur sem er, líka `ð` og `þ`. `^\w+$` dugar ekki: í R missir það af
-öllum íslensku orðunum og hleypir `R2D2` í gegn, því `\w` nær líka yfir tölustafi. Python styður
-ekki `\p{L}`, en `[^\W\d_]` gerir sama gagn: orðastafur sem er hvorki tölustafur né `_`. Sjá
-[Íslenskir stafir og `\w`](#islenskir-stafir).
+`^\w+$` er eitt orð frá byrjun til enda. `(*UCP)` þarf í R svo `\w` nái yfir íslenska stafi. Í
+Python dugar `^\w+$`. Sjá [Íslenskir stafir og `\w`](#islenskir-stafir).
 
 ::: {.panel-tabset}
 ## R
 
 ```{r}
 #| label: syntax-r-6
-daemi <- c("Jón", "Þórdís", "Hafnarfjörður", "R2D2", "e-mail")
-setNames(grepl("^\\p{L}+$", daemi, perl = TRUE), daemi)
+daemi <- c("Jón", "Þórdís", "Hafnarfjörður", "e-mail", "Jón Jónsson")
+setNames(grepl("(*UCP)^\\w+$", daemi, perl = TRUE), daemi)
 
-# Til samanburðar: `\w` með perl = TRUE
+# Til samanburðar: án (*UCP)
 setNames(grepl("^\\w+$", daemi, perl = TRUE), daemi)
 ```
 
@@ -403,14 +358,10 @@ setNames(grepl("^\\w+$", daemi, perl = TRUE), daemi)
 #| label: syntax-py-6
 import re
 
-mynstur = r"^[^\W\d_]+$"
-daemi = ["Jón", "Þórdís", "Hafnarfjörður", "R2D2", "e-mail"]
+mynstur = r"^\w+$"
+daemi = ["Jón", "Þórdís", "Hafnarfjörður", "e-mail", "Jón Jónsson"]
 for s in daemi:
     print(s, bool(re.search(mynstur, s)))
-
-# Til samanburðar: `\w` hleypir tölustöfum í gegn
-for s in daemi:
-    print(s, bool(re.search(r"^\w+$", s)))
 ```
 :::
 :::
