@@ -101,10 +101,11 @@ Lestu það í bútum:
 
 ## Íslenskir stafir og `\w` {#islenskir-stafir}
 
-R hefur tvær regex-vélar. Mynstrið `[\d-]+` er gott til að bera kennsl á streng eins og
-`888-8888`, en það virkar ekki án `perl = TRUE`, því sjálfgefna POSIX-vélin les það sem stafina
-`\`, `d` og `-`. PCRE-vélin, sem `perl = TRUE` kveikir á, er líka yfirleitt hraðari. Þess vegna
-nota R-dæmin hér `perl = TRUE`.
+R hefur tvær regex-vélar, sjálfgefna vélin er POSIX-vélin, hin vélin er PCRE-vélin sem er aðeins
+notuð þegar `perl = TRUE` er til staðar. Mynstrið `[\d-]+` er gott til að bera kennsl á einhvern
+streng með tölum og bandstrikum eins og `888-8888` eða `888888-8888`, en það virkar aðeins ef
+`perl = TRUE`, því sjálfgefna POSIX-vélin les það sem stafina `\`, `d` og `-`. PCRE-vélin er
+líka yfirleitt hraðari. Þess vegna nota R-dæmin hér `perl = TRUE`.
 
 Gallinn er að þá passar `\w` aðeins við enska stafi. Settu `(*UCP)` fremst í mynstrið til að fá
 íslenska stafi með:
