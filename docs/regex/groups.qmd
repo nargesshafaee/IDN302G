@@ -91,6 +91,10 @@ regmatches(txt, gregexpr("[[:alnum:]._]+@[[:alnum:].-]+", txt))
 ```
 
 Sömu föll taka `perl = TRUE`: `grepl()`, `sub()`, `gsub()`, `regexpr()`.
+
+Fyrri leiðin hefur þó einn galla: með `perl = TRUE` passar `\w` ekki við íslenska stafi, svo
+netfangið `jón@hi.is` yrði að `n@hi.is`. Settu `(*UCP)` fremst í mynstrið til að laga það. Sjá
+[Íslenskir stafir og `\w`](syntax.qmd#islenskir-stafir).
 :::
 
 ## Python
