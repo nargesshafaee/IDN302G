@@ -101,24 +101,16 @@ Lestu það í bútum:
 
 ## Íslenskir stafir og `\w` {#islenskir-stafir}
 
-R hefur tvær regex-vélar. Sjálfgefna vélin fylgir POSIX-staðli. Með `perl = TRUE` notar R
-PCRE-vélina, sem ræður við meira. Sjálfgefna vélin les til dæmis `\d` inni í hornklofum sem
-stafina `\` og `d`:
-
-```{r}
-#| label: syntax-r-is-1
-s <- "Sími: 555-1234"
-regmatches(s, regexpr("[\\d-]+", s))
-regmatches(s, regexpr("[\\d-]+", s, perl = TRUE))
-```
-
-PCRE er líka yfirleitt hraðari, og þess vegna nota R-dæmin hér `perl = TRUE`.
+R hefur tvær regex-vélar. Mynstrið `[\d-]+` er gott til að bera kennsl á streng eins og
+`888-8888`, en það virkar ekki án `perl = TRUE`, því sjálfgefna POSIX-vélin les það sem stafina
+`\`, `d` og `-`. PCRE-vélin, sem `perl = TRUE` kveikir á, er líka yfirleitt hraðari. Þess vegna
+nota R-dæmin hér `perl = TRUE`.
 
 Gallinn er að þá passar `\w` aðeins við enska stafi. Settu `(*UCP)` fremst í mynstrið til að fá
 íslenska stafi með:
 
 ```{r}
-#| label: syntax-r-is-2
+#| label: syntax-r-is-1
 setning <- "Hún sá Þór við ána"
 regmatches(setning, gregexpr("\\w+", setning, perl = TRUE))
 regmatches(setning, gregexpr("(*UCP)\\w+", setning, perl = TRUE))
